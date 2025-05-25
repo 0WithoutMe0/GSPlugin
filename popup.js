@@ -7,7 +7,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
 });
 
 function collectMedia() {
-  // Сохраняем изображения
+
   const images = Array.from(document.querySelectorAll('img')).filter(img => {
     return img.naturalWidth > 150 && img.naturalHeight > 150 && img.src;
   });
@@ -21,7 +21,7 @@ function collectMedia() {
 
   chrome.runtime.sendMessage({ type: 'SAVE_GALLERY', media: imageData });
 
-  // Подключаем слежение за воспроизведением видео
+  
   const videos = document.querySelectorAll('video');
   videos.forEach((vid, idx) => {
     vid.addEventListener('play', () => {

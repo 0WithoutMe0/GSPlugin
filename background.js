@@ -1,21 +1,24 @@
-let htmlParts = [
-  `<!DOCTYPE html>
-  <html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Saved Gallery</title>
-    <style>
-      img, video { max-width: 100%; display: block; margin-bottom: 8px; }
-      figure { margin: 1em 0; }
-      figcaption { font-size: 14px; color: #444; font-style: italic; margin-top: 4px; }
-    </style>
-  </head>
-  <body>`
-];
-
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'SAVE_GALLERY') {
-    msg.media.forEach((item) => {
+    const htmlParts = [];
+
+   
+    htmlParts.push(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Saved Gallery</title>
+        <style>
+          img, video { max-width: 100%; display: block; margin-bottom: 8px; }
+          figure { margin: 1em 0; }
+          figcaption { font-size: 14px; color: #444; font-style: italic; margin-top: 4px; }
+        </style>
+      </head>
+      <body>
+    `);
+
+    msg.media.forEach((item, i) => {
       const folder = item.type === 'image' ? 'images' : 'videos';
 
       chrome.downloads.download({
@@ -40,9 +43,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       }
     });
 
-    // Всегда закрываем тег </body></html> для сохранения
-    const fullHtml = [...htmlParts, '</body></html>'].join('\n');
-    const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(fullHtml);
+    htmlParts.push('</body></html>');
+
+    const htmlContent = htmlParts.join('\n');
+    const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(htmlContent);
 
     chrome.downloads.download({
       url: dataUrl,
