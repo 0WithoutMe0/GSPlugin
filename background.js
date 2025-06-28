@@ -1,9 +1,9 @@
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.type === 'SAVE_GALLERY') {
-    const htmlParts = [];
+/* background.js – полностью обновлённый */
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.type === 'SAVE_GALLERY' && Array.isArray(msg.media)) {
 
-   
-    htmlParts.push(`
+    /* 1. Сохраняем все медиа-файлы */
+    const htmlParts = [`
       <!DOCTYPE html>
       <html>
       <head>
@@ -16,16 +16,23 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         </style>
       </head>
       <body>
-    `);
+    `];
 
-    msg.media.forEach((item, i) => {
-      const folder = item.type === 'image' ? 'images' : 'videos';
+    msg.media.forEach((item) => {
+      /* ── главное изменение ──  
+         если popup передал item.folder – используем его;
+         иначе по старой логике */
+      const folder =
+        item.folder ||
+        (item.type === 'image' ? 'images' :
+         item.type === 'video' ? 'videos' : '');
 
       chrome.downloads.download({
-        url: item.url,
+        url:      item.url,
         filename: `gallery/${folder}/${item.name}`
       });
 
+      /* Формируем предварительный index.html */
       if (item.type === 'image') {
         htmlParts.push(`
           <figure>
@@ -43,13 +50,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       }
     });
 
+    /* 2. Сохраняем index.html */
     htmlParts.push('</body></html>');
-
     const htmlContent = htmlParts.join('\n');
     const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(htmlContent);
 
     chrome.downloads.download({
-      url: dataUrl,
+      url:      dataUrl,
       filename: 'gallery/index.html'
     });
   }
